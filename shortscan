@@ -17,7 +17,7 @@ if [ -n "$1" ]; then
 		for i in "${cache[@]}"; do
 			duplicate=$(grep "http://pastebin.com/raw/$i" "$scriptlocation/customresults/$dateofsearch $timeofsearch - $1")
 			if [ -z "$duplicate" ]; then
-				readpaste=$(curl http://pastebin.com/api_scrape_item.php?i="$i" -s | egrep "$1")
+				readpaste=$(curl http://pastebin.com/api_scrape_item.php?i="$i" -s | grep "$1") # you may want to change "grep" here into "egrep" to use regex
 				if [ -n "$readpaste" ]; then
 					printf "################################\n--------------------------------\nhttp://pastebin.com/raw/$i\n--------------------------------\n\n\n%s\n\n\n" "$readpaste" >> "$scriptlocation/customresults/$dateofsearch $timeofsearch - $1"
 				fi

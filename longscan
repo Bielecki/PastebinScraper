@@ -30,8 +30,9 @@ while true; do
 			if [ ! -d "$scriptlocation/results/$1/$year/$month/$day" ]; then
 				mkdir "$scriptlocation/results/$1/$year/$month/$day"
 			fi
-        	        readpaste=$(curl http://pastebin.com/api_scrape_item.php?i="$i" -s | grep "$1")
+        	        readpaste=$(curl http://pastebin.com/api_scrape_item.php?i="$i" -s | grep "$1") # you may want to change "grep" here into "egrep" to use regex
 			if [ -n "$readpaste" ]; then
+					hour=$(date +%H)
 					minute=$(date +%M)
 					second=$(date +%S)
 					printf "%s" "$readpaste" > "$scriptlocation/results/$1/$year/$month/$day/$hour-$minute-$second $i"
