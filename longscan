@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Script written by Bielecki - https://github.com/Bielecki - please respect my work and don't remove this line.
+
+scriptlocation=$(dirname "${BASH_SOURCE[0]}")
+if [ -n "$1" ]; then
+while true; do
+	year=$(date +%Y)
+	month=$(date +%m)
+	day=$(date +%d)
+	hour=$(date +%H)
+	minute=$(date +%M)
+	second=$(date +%S)
+        cache=($(curl http://pastebin.com/api_scraping.php -s | grep '"key":' | awk '{print $2}' | sed -e 's/,$//' -e 's/"//g'))
+        for i in "${cache[@]}"; do
+		if [ ! -d "$scriptlocation/results" ]; then
+			mkdir "$scriptlocation/results"
+		fi
+		if [ ! -d "$scriptlocation/results/$1" ]; then
+			mkdir "$scriptlocation/results/$1"
+		fi
+		duplicate=$(find "$scriptlocation/results/$1/" -name "*$i*")
+		if [ -z "$duplicate" ]; then
+			if [ ! -d "$scriptlocation/results/$1/$year" ]; then
+				mkdir "$scriptlocation/results/$1/$year"
+			fi
+			if [ ! -d "$scriptlocation/results/$1/$year/$month" ]; then
+				mkdir "$scriptlocation/results/$1/$year/$month"
+			fi
+			if [ ! -d "$scriptlocation/results/$1/$year/$month/$day" ]; then
+				mkdir "$scriptlocation/results/$1/$year/$month/$day"
+			fi
+        	        readpaste=$(curl http://pastebin.com/api_scrape_item.php?i="$i" -s | grep "$1")
+			if [ -n "$readpaste" ]; then
+					minute=$(date +%M)
+					second=$(date +%S)
+					printf "%s" "$readpaste" > "$scriptlocation/results/$1/$year/$month/$day/$hour-$minute-$second $i"
+	                fi
+		fi
+        done
+sleep 60
+done
+else
+        printf "Specify word that you want to search in pastes\n"
+fi
+
