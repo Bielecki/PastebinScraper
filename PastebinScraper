@@ -1,0 +1,328 @@
+#!/bin/bash
+scriptlocation=$(dirname "${BASH_SOURCE[0]}")
+function fullscan
+{
+	while true; do
+		year=$(date +%Y)
+		month=$(date +%m)
+		day=$(date +%d)
+		hour=$(date +%H)
+		minute=$(date +%M)
+		second=$(date +%S)
+		cache=($(curl -s "$scrapelink" | grep '"key":' | awk '{print $2}' | sed -e 's/,$//' -e 's/"//g'))
+		for i in "${cache[@]}"; do
+			if [ ! -d "$scriptlocation/results" ]; then
+				mkdir "$scriptlocation/results"
+			fi
+			if [ ! -d "$scriptlocation/results/$scantype" ]; then
+				mkdir "$scriptlocation/results/$scantype"
+			fi
+			if [ ! -d "$scriptlocation/results/$scantype/$keyword" ]; then
+				mkdir "$scriptlocation/results/$scantype/$keyword"
+			fi
+			duplicate=$(find "$scriptlocation/results/$scantype/$keyword/" -name "*$i*")
+			if [ -z "$duplicate" ]; then
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year"
+				fi
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year/$month" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year/$month"
+				fi
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year/$month/$day" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year/$month/$day"
+				fi
+				readpaste=$(curl -s http://pastebin.com/api_scrape_item.php?i="$i")
+				check=$("$search" "$keyword" <<< "$readpaste")
+				if [ -n "$check" ]; then
+					hour=$(date +%H)
+					minute=$(date +%M)
+					second=$(date +%S)
+					printf "%s\n" "$readpaste" > "$scriptlocation/results/$scantype/$keyword/$year/$month/$day/$hour-$minute-$second $i"
+				fi
+			fi
+		done
+		sleep "$delay"
+	done
+}
+function longscan
+{
+	while true; do
+		year=$(date +%Y)
+		month=$(date +%m)
+		day=$(date +%d)
+		hour=$(date +%H)
+		minute=$(date +%M)
+		second=$(date +%S)
+		cache=($(curl -s "$scrapelink" | grep '"key":' | awk '{print $2}' | sed -e 's/,$//' -e 's/"//g'))
+		for i in "${cache[@]}"; do
+			if [ ! -d "$scriptlocation/results" ]; then
+				mkdir "$scriptlocation/results"
+			fi
+			if [ ! -d "$scriptlocation/results/$scantype" ]; then
+				mkdir "$scriptlocation/results/$scantype"
+			fi
+			if [ ! -d "$scriptlocation/results/$scantype/$keyword" ]; then
+				mkdir "$scriptlocation/results/$scantype/$keyword"
+			fi
+			duplicate=$(find "$scriptlocation/results/$scantype/$keyword/" -name "*$i*")
+			if [ -z "$duplicate" ]; then
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year"
+				fi
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year/$month" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year/$month"
+				fi
+				if [ ! -d "$scriptlocation/results/$scantype/$keyword/$year/$month/$day" ]; then
+					mkdir "$scriptlocation/results/$scantype/$keyword/$year/$month/$day"
+				fi
+				readpaste=$(curl -s http://pastebin.com/api_scrape_item.php?i="$i" | "$search" "$keyword")
+				if [ -n "$readpaste" ]; then
+					hour=$(date +%H)
+					minute=$(date +%M)
+					second=$(date +%S)
+					printf "%s" "$readpaste" > "$scriptlocation/results/$scantype/$keyword/$year/$month/$day/$hour-$minute-$second $i"
+				fi
+			fi
+		done
+		sleep "$delay"
+	done
+}
+function extendedscan
+{
+	dateofsearch=$(date +%Y-%m-%d)
+	timeofsearch=$(date +%H-%M-%S)
+	while true; do
+		if [ ! -d "$scriptlocation/fastresults" ]; then
+			mkdir "$scriptlocation/fastresults"
+		fi
+		if [ ! -d "$scriptlocation/fastresults/$scantype" ]; then
+			mkdir "$scriptlocation/fastresults/$scantype"
+		fi
+		if [ ! -f "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword" ]; then
+			touch "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword"
+		fi
+		cache=($(curl -s "$scrapelink" | grep '"key":' | awk '{print $2}' | sed -e 's/,$//' -e 's/"//g'))
+		for i in "${cache[@]}"; do
+			duplicate=$("$search" "http://pastebin.com/raw/$i" "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword")
+			if [ -z "$duplicate" ]; then
+				fullpaste=$(curl -s http://pastebin.com/api_scrape_item.php?i="$i")
+				readpaste=$("$search" "$keyword" <<< "$fullpaste")
+				if [ -n "$readpaste" ]; then
+					printf "################################\n--------------------------------\nhttp://pastebin.com/raw/$i\n--------------------------------\n\n\n%s\n\n\n" "$fullpaste" >> "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword"
+				fi
+			fi
+		done
+		sleep "$delay"
+	done
+}
+function shortscan
+{
+	dateofsearch=$(date +%Y-%m-%d)
+	timeofsearch=$(date +%H-%M-%S)
+	while true; do
+		if [ ! -d "$scriptlocation/fastresults" ]; then
+			mkdir "$scriptlocation/fastresults"
+		fi
+		if [ ! -d "$scriptlocation/fastresults/$scantype" ]; then
+			mkdir "$scriptlocation/fastresults/$scantype"
+		fi
+		if [ ! -f "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword" ]; then
+			touch "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword"
+		fi
+		cache=($(curl -s "$scrapelink" | grep '"key":' | awk '{print $2}' | sed -e 's/,$//' -e 's/"//g'))
+		for i in "${cache[@]}"; do
+			duplicate=$("$search" "http://pastebin.com/raw/$i" "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword")
+			if [ -z "$duplicate" ]; then
+				readpaste=$(curl -s http://pastebin.com/api_scrape_item.php?i="$i" | "$search" "$keyword")
+				if [ -n "$readpaste" ]; then
+					printf "################################\n--------------------------------\nhttp://pastebin.com/raw/$i\n--------------------------------\n\n\n%s\n\n\n" "$readpaste" >> "$scriptlocation/fastresults/$scantype/$dateofsearch $timeofsearch - $keyword"
+				fi
+			fi
+		done
+		sleep "$delay"
+	done
+}
+function startscan
+{
+	scrapelink="http://pastebin.com/api_scraping.php"
+	printf "Starting scan. Press ^C to stop...\n"
+	trap 'printf "\nScan finished - interrupted by user\n\n"; exit 0' INT HUP QUIT
+	if [ -n "$limit" ]; then
+		scrapelink=( "$scrapelink"?limit="$limit" )
+	fi
+	if [ -n "$lang" ]; then
+		if [ -n "$limit" ]; then
+			scrapelink=( "$scrapelink"\&lang="$lang" )
+		else
+			scrapelink=( "$scrapelink"?lang="$lang" )
+		fi
+	fi
+	if [ "$regex" == "true" ]; then
+		search="egrep"
+	else
+		search="grep"
+	fi
+	if [ "$scantype" == "full" ]; then
+		fullscan
+	elif [ "$scantype" == "long" ]; then
+		longscan
+	elif [ "$scantype" == "extended" ]; then
+		extendedscan
+	elif [ "$scantype" == "short" ]; then
+		shortscan
+	fi
+}
+function usage
+{
+	printf "PastebinScraper is a script which is looking for KEYWORD in Pastebin pastes.\n"
+	printf "Usage: %s %s\n" "$0" "[-hE] [--limit NUMBER] [--lang LANGUAGE] [--repeat SECONDS] -s SCANTYPE KEYWORD"
+	printf " %-3s %-17s %s \n" \
+	"-h," "--help" "- display this help and exit" \
+	"-s," "--scan SCANTYPE" "- select SCANTYPE. Available scantypes are: full, long, extended, short." \
+	"-E" "--extended-regexp" "- use regex in your search. Remember to quote your keywords!" \
+	"" "--limit NUMBER" "- limit the results returned at once (from 1 to 500). Default is 50." \
+	"" "--lang LANGUAGE" "- grab results from a certain language." \
+	"" "--delay SECONDS" "- repeat scanning every n seconds. Default is 60"
+	printf "Run this script manually in background or screen, otherwise it will be running in foreground.\n"
+	if [ "$manual" == "true" ]; then
+		exit 0
+	else
+		exit 1
+	fi
+}
+while [ $# -gt 0 ]; do
+	case $1 in
+		-h|--help)
+			manual="true"
+			usage
+			;;
+		-s|--scan)
+			scantype="$2"
+			shift
+			;;
+		-E|--extended-regexp)
+			regex="true"
+			;;
+		--limit)
+			islimit="true"
+			limit="$2"
+			shift
+			;;
+		--lang)
+			lang="$2"
+			shift
+			;;
+		--delay)
+			isdelay="true"
+			delay="$2"
+			shift
+			;;
+		-*)
+			usage
+			;;
+		*)
+			keyword="$1"
+			;;
+	esac
+	shift
+done
+if [ -z "$scantype" ]; then
+	usage
+	exit 1
+fi
+if [[ "$scantype" != "full" && "$scantype" != "long" && "$scantype" != "extended" && "$scantype" != "short" ]]; then
+	printf "Invalid scantype!\nAvailable scantypes are: full, long, extended, short.\n"
+	exit 1
+fi
+if [ -z "$keyword" ]; then
+	printf "You didn't specified keyword to search.\n"
+	exit 1
+fi
+if [ -n "$lang" ]; then
+	islangvalid="false"
+	array=(4cs 6502acme 6502kickass 6502tasm abap actionscript actionscript3 ada aimms algol68 apache applescript apt_sources arm asm asp asymptote autoconf autohotkey autoit avisynth awk bascomavr bash basic4gl dos bibtex blitzbasic b3d bmx bnf boo bf c c_winapi c_mac cil csharp cpp cpp-winapi cpp-qt c_loadrunner caddcl cadlisp cfdg chaiscript chapel clojure klonec klonecpp cmake cobol coffeescript cfm css cuesheet d dart dcl dcpu16 dcs delphi oxygene diff div dot e ezt ecmascript eiffel email epc erlang fsharp falcon fo f1 fortran freebasic freeswitch gambas gml gdb genero genie gettext go groovy gwbasic haskell haxe hicest hq9plus html4strict html5 icon idl ini inno intercal io ispfpanel j java java5 javascript jcl jquery json julia kixtart latex ldif lb lsl2 lisp llvm locobasic logtalk lolcode lotusformulas lotusscript lscript lua m68k magiksf make mapbasic matlab mirc mmix modula2 modula3 68000devpac mpasm mxml mysql nagios netrexx newlisp nginx nimrod text nsis oberon2 objeck objc ocaml-brief ocaml octave pf glsl oobas oracle11 oracle8 oz parasail parigp pascal pawn pcre per perl perl6 php php-brief pic16 pike pixelbender plsql postgresql postscript povray powershell powerbuilder proftpd progress prolog properties providex puppet purebasic pycon python pys60 q qbasic qml rsplus racket rails rbs rebol reg rexx robots rpmspec ruby gnuplot rust sas scala scheme scilab scl sdlbasic smalltalk smarty spark sparql sqf sql standardml stonescript sclang swift systemverilog tsql tcl teraterm thinbasic typoscript unicon uscript ups urbi vala vbnet vbscript vedit verilog vhdl vim visualprolog vb visualfoxpro whitespace whois winbatch xbasic xml xorg_conf xpp yaml z80 zxbasic)
+	for i in "${array[@]}"; do
+		if [ "$i" == "$lang" ] ; then
+			islangvalid="true"
+			break
+		fi
+	done
+	if [ "$islangvalid" == "false" ]; then
+		printf "Selected language \"%s\" doesn't appear on Pastebin supported list!\n" "$lang"
+		exit 1
+	fi
+fi
+if [[ "$islimit" == "true" ]]; then
+	case "$limit" in
+		''|*[!0-9]*)
+				printf "Your limit is not valid (current is \"%s\")\n" "$limit" 
+				exit 1
+				;;
+		*)
+			;;
+	esac
+	if [ "$limit" -lt "1" ]; then
+		printf "Your limit is too low! Lowest is 1.\n"
+		exit 1
+	elif [ "$limit" -gt "500" ]; then
+		printf "Your limit is too high! Max is 500.\n"
+		exit 1
+	elif [ "$limit" -lt "10" ]; then
+		printf "Your limit is less than 10. Do you want to continue? (y/n)  "
+		read -r yn
+		case "$yn" in
+			[Yy])
+				;;
+			[Nn])
+				exit 2
+				;;
+		esac
+	elif [ "$limit" -gt "200" ]; then
+		printf "Your limit is greater than 200. Do you want to continue? (y/n)  "
+		read -r yn
+		case "$yn" in
+			[Yy])
+				;;
+			[Nn])
+				exit 2
+				;;
+		esac
+	fi
+fi
+if [[ "$isdelay" == "true" ]]; then
+	case "$delay" in
+		''|*[!0-9]*)
+				printf "Your delay is not valid (current is \"%s\")\n" "$limit" 
+				exit 2
+				;;
+		*)
+			;;
+	esac
+	if [ "$delay" -lt "1" ]; then
+		printf "Your delay is too low! Lowest is 1.\n"
+		exit 1
+	elif [ "$delay" -lt "10" ]; then
+		printf "Your delay is less than 10. Do you want to continue? (y/n)  "
+		read -r yn
+		case "$yn" in
+			[Yy])
+				;;
+			[Nn])
+				exit 2
+				;;
+		esac
+	elif [ "$delay" -gt "3600" ]; then
+		printf "Your delay is greater than 3600. Do you want to continue? (y/n)  "
+		read -r yn
+		case "$yn" in
+			[Yy])
+				;;
+			[Nn])
+				exit 2
+				;;
+		esac
+	fi
+else
+	delay="60"
+fi
+startscan
