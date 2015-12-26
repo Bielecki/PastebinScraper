@@ -175,7 +175,7 @@ function startscan
 function usage
 {
 	printf "PastebinScraper is a script which is looking for KEYWORD in Pastebin pastes.\n"
-	printf "Usage: %s %s\n" "$0" "[-hE] [--limit NUMBER] [--lang LANGUAGE] [--repeat SECONDS] -s SCANTYPE KEYWORD"
+	printf "Usage: %s %s\n" "$0" "[-hE] [--limit NUMBER] [--lang LANGUAGE] [--delay SECONDS] -s SCANTYPE KEYWORD"
 	printf " %-3s %-17s %s \n" \
 	"-h," "--help" "- display this help and exit" \
 	"-s," "--scan SCANTYPE" "- select SCANTYPE. Available scantypes are: full, long, extended, short." \
